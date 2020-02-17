@@ -86,6 +86,9 @@ from gaelLCFuncs import *
 from occultquad import *
 
 
+
+import time
+
 # ---HELPER FUNCTIONS----------------------------------------------------------------------
 # Function that bins an array
 def binner(arr,n=1):
@@ -1823,7 +1826,7 @@ if __name__ == "__main__":
 
                 # determines the aperture and annulus combinations to iterate through based on the sigmas of the LM fit
                 aperture_min = int(3 * np.nanmax([targsigX, targsigY]))
-                aperture_max = int(5 * np.nanmax([targsigX, targsigY]))
+                aperture_max = int(5  *np.nanmax([targsigX, targsigY]))
                 annulus_min = int(2 * np.nanmax([targsigX, targsigY]))
                 annulus_max = int(4 * np.nanmax([targsigX, targsigY]))
                 
@@ -1835,10 +1838,22 @@ if __name__ == "__main__":
                 annulus_step = np.nanmax([1, (annulus_max - annulus_min)//5])  # forces step size to be at least 1
                 annulus_sizes = np.arange(annulus_min, annulus_max, annulus_step)
                 
+
+                # Starts time of all three nested loops and initializes array of Centroid Fit times
+                startLoop = clock.time
+                centFitTimes = []
+
+
+
                 for apertureR in aperture_sizes:  # aperture loop
                     for annulusR in annulus_sizes:  # annulus loop
                         # fileNumber = 1
                         print('Testing Comparison Star #' + str(compCounter+1) + ' with a '+str(apertureR)+' pixel aperture and a '+str(annulusR)+' pixel annulus.')
+                        
+                        startCentFit = clock.time()
+
+                        print('Time at start of Centroid Fit loop: ' + startCentFit)
+
                         for fileNumber, imageData in enumerate(sortedallImageData):
 
                             # hDul = fits.open(imageFile)  # opens the fits file
@@ -2027,6 +2042,18 @@ if __name__ == "__main__":
                                 # allImageData = allImageData[:fileNumber]
 
                                 break
+                                
+
+                                endCentFit = time.clock() #ends time of Centroid Fit loop
+                                print('Time at end of Centroid Fit loop: ' + endCentFit)
+
+                                centFitTime = endCentFit - startCentFit #duration of Centroid Fit loop
+                                print('Time of Centroid Fit loop: ' + CentFitTime)
+
+
+                                centFitTimes.append(centFitTime); #adds duration of this annulus size to Centroid Fit times array
+
+                                
 
                         # EXIT THE FILE LOOP
 
@@ -2143,6 +2170,21 @@ if __name__ == "__main__":
                     # Exit aperture loop
                 # Exit annulus loop
             # Exit the Comp Stars Loop
+
+            endLoop = time.clock() #end time of outer Comp Star loop
+
+            loopTime = endLoop - startLoop #duration of Comp Star loop
+            print('The duration of the Comp Stars Loop is: ' + loopTime)
+
+            avgCentFitTime = (np.sum(centFitTimes)/len(centFitTimes)) #average of all different Centroid Fit durations for every annulus size
+            print('The average duration of the Centroid Fit loop is: ' + avgCentFitTime)
+
+            centFitPercent = avgCentFitTime/loopTime  #portion of time on Centroid Fitting of full Comp Star Loop
+            print('The centroid fit loop is ' + centFitPercent + 'of the entire Comp Stars Loop')
+
+
+
+
             print('')
             print('*********************************************')
             print('Best Comparison Star: #' + str(bestCompStar))
