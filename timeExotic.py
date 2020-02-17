@@ -1840,7 +1840,7 @@ if __name__ == "__main__":
                 
 
                 # Starts time of all three nested loops and initializes array of Centroid Fit times
-                startLoop = clock.time
+                startLoop = time.time()
                 centFitTimes = []
 
 
@@ -1850,9 +1850,12 @@ if __name__ == "__main__":
                         # fileNumber = 1
                         print('Testing Comparison Star #' + str(compCounter+1) + ' with a '+str(apertureR)+' pixel aperture and a '+str(annulusR)+' pixel annulus.')
                         
-                        startCentFit = clock.time()
 
-                        print('Time at start of Centroid Fit loop: ' + startCentFit)
+
+                        startCentFit = time.time()
+                        print('Time at start of Centroid Fit loop: ' + str(startCentFit))
+
+
 
                         for fileNumber, imageData in enumerate(sortedallImageData):
 
@@ -2028,6 +2031,8 @@ if __name__ == "__main__":
                                 # fileNumber = fileNumber + 1
                                 # hDul.close()  # close the stream
 
+                           
+
                             #otherwise, mask off the rest of the files from time sorted names including the current one
                             else:
                                 # timeSortedNames = timeSortedNames[:fileNumber]
@@ -2042,18 +2047,16 @@ if __name__ == "__main__":
                                 # allImageData = allImageData[:fileNumber]
 
                                 break
-                                
-
-                                endCentFit = time.clock() #ends time of Centroid Fit loop
-                                print('Time at end of Centroid Fit loop: ' + endCentFit)
-
-                                centFitTime = endCentFit - startCentFit #duration of Centroid Fit loop
-                                print('Time of Centroid Fit loop: ' + CentFitTime)
 
 
-                                centFitTimes.append(centFitTime); #adds duration of this annulus size to Centroid Fit times array
+                        endCentFit = time.time() #ends time of Centroid Fit loop
+                        print('Time at end of Centroid Fit loop: ' + str(endCentFit))
 
-                                
+                        centFitTime = endCentFit - startCentFit #duration of Centroid Fit loop
+                        print('Time of Centroid Fit loop: ' + str(CentFitTime))
+
+
+                        centFitTimes.append(centFitTime) #adds duration of this annulus size to Centroid Fit times array
 
                         # EXIT THE FILE LOOP
 
@@ -2171,16 +2174,16 @@ if __name__ == "__main__":
                 # Exit annulus loop
             # Exit the Comp Stars Loop
 
-            endLoop = time.clock() #end time of outer Comp Star loop
+            endLoop = time.time() #end time of outer Comp Star loop
 
             loopTime = endLoop - startLoop #duration of Comp Star loop
-            print('The duration of the Comp Stars Loop is: ' + loopTime)
+            print('The duration of the Comp Stars Loop is: ' + str(loopTime))
 
             avgCentFitTime = (np.sum(centFitTimes)/len(centFitTimes)) #average of all different Centroid Fit durations for every annulus size
-            print('The average duration of the Centroid Fit loop is: ' + avgCentFitTime)
+            print('The average duration of the Centroid Fit loop is: ' + str(avgCentFitTime))
 
             centFitPercent = avgCentFitTime/loopTime  #portion of time on Centroid Fitting of full Comp Star Loop
-            print('The centroid fit loop is ' + centFitPercent + 'of the entire Comp Stars Loop')
+            print('The centroid fit loop is ' + str(centFitPercent) + 'of the entire Comp Stars Loop')
 
 
 
