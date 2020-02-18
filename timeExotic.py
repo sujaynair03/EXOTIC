@@ -2053,7 +2053,7 @@ if __name__ == "__main__":
                         print('Time at end of Centroid Fit loop: ' + str(endCentFit))
 
                         centFitTime = endCentFit - startCentFit #duration of Centroid Fit loop
-                        print('Time of Centroid Fit loop: ' + str(CentFitTime))
+                        print('Time of Centroid Fit loop: ' + str(centFitTime))
 
 
                         centFitTimes.append(centFitTime) #adds duration of this annulus size to Centroid Fit times array
@@ -2179,10 +2179,10 @@ if __name__ == "__main__":
             loopTime = endLoop - startLoop #duration of Comp Star loop
             print('The duration of the Comp Stars Loop is: ' + str(loopTime))
 
-            avgCentFitTime = (np.sum(centFitTimes)/len(centFitTimes)) #average of all different Centroid Fit durations for every annulus size
-            print('The average duration of the Centroid Fit loop is: ' + str(avgCentFitTime))
+            # avgCentFitTime = (np.sum(centFitTimes)/len(centFitTimes)) #average of all different Centroid Fit durations for every annulus size
+            # print('The average duration of the Centroid Fit loop is: ' + str(avgCentFitTime))
 
-            centFitPercent = avgCentFitTime/loopTime  #portion of time on Centroid Fitting of full Comp Star Loop
+            centFitPercent = np.sum(centFitTimes)/loopTime  #portion of time on Centroid Fitting of full Comp Star Loop
             print('The centroid fit loop is ' + str(centFitPercent) + 'of the entire Comp Stars Loop')
 
 
