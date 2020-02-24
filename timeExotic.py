@@ -1843,6 +1843,9 @@ if __name__ == "__main__":
                 startLoop = time.time()
                 centFitTimes = []
 
+                target_fits = {}
+                ref_fits = {}
+                reg_trans = {}
 
 
                 for apertureR in aperture_sizes:  # aperture loop
@@ -1855,10 +1858,12 @@ if __name__ == "__main__":
                         startCentFit = time.time()
                         print('Time at start of Centroid Fit loop: ' + str(startCentFit))
 
+                        t1t0, t2t1, t3t2, t4t3 = [], [], [], []
+
 
 
                         for fileNumber, imageData in enumerate(sortedallImageData):
-
+                            t0 = time.time()
                             # hDul = fits.open(imageFile)  # opens the fits file
                             # imageData = fits.getdata(imageFile, ext=0)  # Extracts data from the image file
 
@@ -1885,7 +1890,13 @@ if __name__ == "__main__":
                             # ------ CENTROID FITTING ----------------------------------------
 
                             # corrects for any image shifts that result from a tracking slip
-                            shift, error, diffphase = register_translation(prevImageData, imageData)
+                            if fileNumber in reg_trans.keys():
+                                shift, error, diffphase = reg_trans[fileNumber]
+                            else:
+                                shift, error, diffphase = register_translation(prevImageData, imageData)
+                                reg_trans[fileNumber] = [shift, error, diffphase]
+                            
+
                             xShift = shift[1]
                             yShift = shift[0]
 
@@ -1928,8 +1939,11 @@ if __name__ == "__main__":
                                 print('*************************************************************************************')
                                 driftBool = True
 
+                            t1 = time.time()
+
                             #if the star isn't too close, then proceed as normal
                             if (driftBool == False):
+
                                 targSearchA = imageData[tymin:tymax, txmin:txmax]
                                 refSearchA = imageData[rymin:rymax, rxmin:rxmax]
 
@@ -1948,6 +1962,8 @@ if __name__ == "__main__":
                                     if (rel > 0):
                                         rGuessBkg = rel
                                         break
+
+                                t2 = time.time()
                                 
 
                                 # Guess at Gaussian Parameters and feed them in to help gaussian fitter
@@ -1957,8 +1973,13 @@ if __name__ == "__main__":
                                     print('Error: the Darks have a higher pixel counts than the image itself')
                                 myPriors = [tGuessAmp, prevTSigX, prevTSigY, tGuessBkg] #########ERROR HERE
 
-                                tx, ty, tamplitude, tsigX, tsigY, toff = fit_centroid(imageData, targPos,
+
+                                if fileNumber in target_fits.keys():
+                                    tx, ty, tamplitude, tsigX, tsigY, toff = target_fits[fileNumber]
+                                else:
+                                    tx, ty, tamplitude, tsigX, tsigY, toff = fit_centroid(imageData, targPos,
                                                                                     init=myPriors, box=distFC)
+                                    target_fits[fileNumber] = [tx, ty, tamplitude, tsigX, tsigY, toff]
                                 currTPX = tx
                                 currTPY = ty
 
@@ -1968,10 +1989,18 @@ if __name__ == "__main__":
 
                                 rGuessAmp = refSearchA.max() - rGuessBkg
                                 myRefPriors = [rGuessAmp, prevRSigX, prevRSigY, rGuessBkg]
-                                rx, ry, ramplitude, rsigX, rsigY, roff = fit_centroid(imageData, [prevRPX, prevRPY],
+
+                                if fileNumber in ref_fits.keys():
+                                    rx, ry, ramplitude, rsigX, rsigY, roff = ref_fits[fileNumber]
+                                else:
+                                    rx, ry, ramplitude, rsigX, rsigY, roff = fit_centroid(imageData, [prevRPX, prevRPY],
                                                                                     init=myRefPriors, box=distFC)
+                                    ref_fits[fileNumber] = [rx, ry, ramplitude, rsigX, rsigY, roff ]
+
                                 currRPX = rx
                                 currRPY = ry
+
+                                t3 = time.time()
 
                                 # append to list of reference centroid positions for later plotting
                                 xRefCent.append(currRPX)
@@ -2025,6 +2054,7 @@ if __name__ == "__main__":
                                     prevRPY = currRPY
                                     prevRSigX = rsigX
                                     prevTSigY = rsigY
+                                    t4 = time.time()
 
                                 # UPDATE FILE COUNT
                                 prevImageData = imageData
@@ -2047,6 +2077,10 @@ if __name__ == "__main__":
                                 # allImageData = allImageData[:fileNumber]
 
                                 break
+                            t1t0.append(t1-t0)
+                            t2t1.append(t2-t1)
+                            t3t2.append(t3-t2)
+                            t4t3.append(t4-t3)
 
 
                         endCentFit = time.time() #ends time of Centroid Fit loop
@@ -2054,6 +2088,7 @@ if __name__ == "__main__":
 
                         centFitTime = endCentFit - startCentFit #duration of Centroid Fit loop
                         print('Time of Centroid Fit loop: ' + str(centFitTime))
+                        print(np.sum(t1t0), np.sum(t2t1), np.sum(t3t2), np.sum(t4t3))
 
 
                         centFitTimes.append(centFitTime) #adds duration of this annulus size to Centroid Fit times array
